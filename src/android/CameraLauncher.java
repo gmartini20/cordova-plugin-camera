@@ -112,6 +112,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
     private boolean correctOrientation;     // Should the pictures orientation be corrected
     private boolean orientationCorrected;   // Has the picture's orientation been corrected
     private boolean allowEdit;              // Should we allow the user to crop the image.
+    private boolean getFromPhotoApps;       // Should we show only photo apps as option.
 
     protected final static String[] permissions = { Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE };
 
@@ -162,6 +163,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
             this.allowEdit = args.getBoolean(7);
             this.correctOrientation = args.getBoolean(8);
             this.saveToPhotoAlbum = args.getBoolean(9);
+            this.getFromPhotoApps = args.getBoolean(10)
 
             // If the user specifies a 0 or smaller width/height
             // make it -1 so later comparisons succeed
@@ -383,8 +385,12 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                 croppedUri = Uri.fromFile(photo);
                 intent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, croppedUri);
             } else {
-                intent.setAction(Intent.ACTION_GET_CONTENT);
-                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                if (this.getFromPhotoApps) {
+                    intent.setAction(Intent.ACTION_PICK);   
+                } else {
+                    intent.setAction(Intent.ACTION_GET_CONTENT);
+                    intent.addCategory(Intent.CATEGORY_OPENABLE);
+                }
             }
         } else if (this.mediaType == VIDEO) {
             intent.setType("video/*");
@@ -1337,6 +1343,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
         state.putBoolean("allowEdit", this.allowEdit);
         state.putBoolean("correctOrientation", this.correctOrientation);
         state.putBoolean("saveToPhotoAlbum", this.saveToPhotoAlbum);
+        state.putBoolean("getFromPhotoApps", this.getFromPhotoApps);
 
         if (this.croppedUri != null) {
             state.putString("croppedUri", this.croppedUri.toString());
@@ -1361,6 +1368,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
         this.allowEdit = state.getBoolean("allowEdit");
         this.correctOrientation = state.getBoolean("correctOrientation");
         this.saveToPhotoAlbum = state.getBoolean("saveToPhotoAlbum");
+        this.getFromPhotoApps = state.getBoolean("getFromPhotoApps");
 
         if (state.containsKey("croppedUri")) {
             this.croppedUri = Uri.parse(state.getString("croppedUri"));
