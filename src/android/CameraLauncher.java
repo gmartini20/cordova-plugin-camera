@@ -112,7 +112,6 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
     private boolean correctOrientation;     // Should the pictures orientation be corrected
     private boolean orientationCorrected;   // Has the picture's orientation been corrected
     private boolean allowEdit;              // Should we allow the user to crop the image.
-    private boolean getFromPhotoApps;       // Should we show only photo apps as option.
 
     protected final static String[] permissions = { Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE };
 
@@ -163,7 +162,6 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
             this.allowEdit = args.getBoolean(7);
             this.correctOrientation = args.getBoolean(8);
             this.saveToPhotoAlbum = args.getBoolean(9);
-            this.getFromPhotoApps = args.getBoolean(10);
 
             // If the user specifies a 0 or smaller width/height
             // make it -1 so later comparisons succeed
@@ -385,13 +383,8 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                 croppedUri = Uri.fromFile(photo);
                 intent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, croppedUri);
             } else {
-                if (this.getFromPhotoApps) {
-                    intent.setAction(Intent.ACTION_PICK);
-                    intent.addCategory(Intent.CATEGORY_OPENABLE);
-                } else {
-                    intent.setAction(Intent.ACTION_GET_CONTENT);
-                    intent.addCategory(Intent.CATEGORY_OPENABLE);
-                }
+                intent.setAction(Intent.ACTION_GET_CONTENT);
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
             }
         } else if (this.mediaType == VIDEO) {
             intent.setType("video/*");
@@ -807,7 +800,8 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                         Uri tmpFile = FileProvider.getUriForFile(cordova.getActivity(),
                                 applicationId + ".provider",
                                 createCaptureFile(this.encodingType));
-                        performCrop(tmpFile, destType, intent);
+                        // performCrop(tmpFile, destType, intent);
+                        this.processResultFromCamera(destType, intent);
                     } else {
                         this.processResultFromCamera(destType, intent);
                     }
